@@ -11,7 +11,7 @@
             //return to show menu again.
         }
 
-        private static void DeleteAppointment()
+        private static void ShowAppointment()
         {
         }
 
@@ -78,7 +78,7 @@
                         AddAppointment();
                         return true;
                     case 6:
-                        DeleteAppointment();
+                        ShowAppointment();
                         return true;
                     case 7:
                         return false;
