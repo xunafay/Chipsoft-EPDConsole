@@ -69,6 +69,8 @@ namespace Chipsoft.Assignments.EPDConsole
                 var appointments = dbContext.Appointments
                     .Include(a => a.Physician)
                     .Include(a => a.Patient)
+                    .Where(a => a.Physician.Deleted == null)
+                    .Where(a => a.Patient.Deleted == null)
                     .ToList()
                     .GroupBy(a => a.Date.Date)
                     .OrderByDescending(g => g.Key);
@@ -104,6 +106,8 @@ namespace Chipsoft.Assignments.EPDConsole
                 var appointments = dbContext.Appointments
                     .Include(a => a.Physician)
                     .Include(a => a.Patient)
+                    .Where(a => a.Physician.Deleted == null)
+                    .Where(a => a.Patient.Deleted == null)
                     .Where(a => a.PatientId == patient.PatientId)
                     .ToList()
                     .GroupBy(a => a.Date.Date)
@@ -140,6 +144,8 @@ namespace Chipsoft.Assignments.EPDConsole
                 var appointments = dbContext.Appointments
                     .Include(a => a.Physician)
                     .Include(a => a.Patient)
+                    .Where(a => a.Physician.Deleted == null)
+                    .Where(a => a.Patient.Deleted == null)
                     .Where(a => a.PhysicianId == physician.PhysicianId)
                     .ToList()
                     .GroupBy(a => a.Date.Date)
@@ -176,6 +182,8 @@ namespace Chipsoft.Assignments.EPDConsole
                 var appointments = dbContext.Appointments
                     .Include(a => a.Physician)
                     .Include(a => a.Patient)
+                    .Where(a => a.Physician.Deleted == null)
+                    .Where(a => a.Patient.Deleted == null)
                     .Where(a => a.Date.Date == DateTime.Now.Date)
                     .Where(a => a.PhysicianId == physician.PhysicianId)
                     .ToList();
@@ -280,7 +288,8 @@ namespace Chipsoft.Assignments.EPDConsole
             var confirmation = AnsiConsole.Confirm($"Arts [bold red]{physician.Name}[/] verwijderen?");
             if (confirmation)
             {
-                dbContext.Physician.Remove(physician);
+                physician.Deleted = DateTime.Now;
+                dbContext.Physician.Update(physician);
                 dbContext.SaveChanges();
                 AnsiConsole.MarkupLine($"[bold green]Arts {physician} verwijderd[/]");
             }
@@ -323,7 +332,8 @@ namespace Chipsoft.Assignments.EPDConsole
             var confirmation = AnsiConsole.Confirm($"Patient [bold red]{patient.Name}[/] verwijderen?");
             if (confirmation)
             {
-                dbContext.Patients.Remove(patient);
+                patient.Deleted = DateTime.Now;
+                dbContext.Patients.Update(patient);
                 dbContext.SaveChanges();
                 AnsiConsole.Confirm($"[bold green]Patient {patient} verwijderd[/]");
             }

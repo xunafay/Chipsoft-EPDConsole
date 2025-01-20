@@ -24,6 +24,7 @@ namespace Chipsoft.Assignments.EPDConsole
         public string Country { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
+        public DateTime? Deleted { get; set; }
 
         public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
@@ -61,6 +62,7 @@ namespace Chipsoft.Assignments.EPDConsole
         public int PhysicianId { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
+        public DateTime? Deleted { get; set; }
 
         public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
