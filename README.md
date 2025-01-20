@@ -1,5 +1,7 @@
 # ChipSoft Patient Dossier Opdracht
 
+Bij de eerste keer dat je de console app start moet je eerst de database resetten.
+
 ## Inleiding
 
 Dit is mijn implementatie voor Chipsoft hun Technisch Interview opdracht

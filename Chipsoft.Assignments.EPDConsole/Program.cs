@@ -75,6 +75,12 @@ namespace Chipsoft.Assignments.EPDConsole
                     .GroupBy(a => a.Date.Date)
                     .OrderByDescending(g => g.Key);
 
+                if (!appointments.Any())
+                {
+                    AnsiConsole.Confirm("[bold red]Geen afspraken gevonden[/]");
+                    return;
+                }
+
                 var prompt = new SelectionPrompt<Appointment>()
                         .Title("Alle afspraken")
                         .PageSize(14)
@@ -90,7 +96,7 @@ namespace Chipsoft.Assignments.EPDConsole
             // Show appointments of patient
             else if (result.StartsWith("2"))
             {
-                var patients = dbContext.Patients.ToList();
+                var patients = dbContext.Patients.Where(p => p.Deleted == null).ToList();
                 var patient = Util.SearchAndSelect(
                     patients,
                     "Zoek patient",
@@ -113,6 +119,12 @@ namespace Chipsoft.Assignments.EPDConsole
                     .GroupBy(a => a.Date.Date)
                     .OrderByDescending(g => g.Key);
 
+                if (!appointments.Any())
+                {
+                    AnsiConsole.Confirm("[bold red]Geen afspraken gevonden[/]");
+                    return;
+                }
+
                 var prompt = new SelectionPrompt<Appointment>()
                         .Title($"Alle afspraken voor [bold green]{patient.Name} {patient.Surname}[/]")
                         .PageSize(14)
@@ -128,7 +140,7 @@ namespace Chipsoft.Assignments.EPDConsole
             // Show appointments of physician
             else if (result.StartsWith("3"))
             {
-                var physicians = dbContext.Physician.ToList();
+                var physicians = dbContext.Physician.Where(p => p.Deleted == null).ToList();
                 var physician = Util.SearchAndSelect(
                     physicians,
                     "Zoek arts",
@@ -151,6 +163,12 @@ namespace Chipsoft.Assignments.EPDConsole
                     .GroupBy(a => a.Date.Date)
                     .OrderByDescending(g => g.Key);
 
+                if (!appointments.Any())
+                {
+                    AnsiConsole.Confirm("[bold red]Geen afspraken gevonden[/]");
+                    return;
+                }
+
                 var prompt = new SelectionPrompt<Appointment>()
                         .Title($"Alle afspraken voor [bold red]{physician.Name} {physician.Surname}[/]")
                         .PageSize(14)
@@ -166,7 +184,7 @@ namespace Chipsoft.Assignments.EPDConsole
             // Show appointments of physician today
             else if (result.StartsWith("4"))
             {
-                var physicians = dbContext.Physician.ToList();
+                var physicians = dbContext.Physician.Where(p => p.Deleted == null).ToList();
                 var physician = Util.SearchAndSelect(
                     physicians,
                     "Zoek arts",
@@ -188,6 +206,12 @@ namespace Chipsoft.Assignments.EPDConsole
                     .Where(a => a.PhysicianId == physician.PhysicianId)
                     .ToList();
 
+                if (!appointments.Any())
+                {
+                    AnsiConsole.Confirm("[bold red]Geen afspraken gevonden[/]");
+                    return;
+                }
+
                 var prompt = new SelectionPrompt<Appointment>()
                         .Title($"Afspraken van vandaag voor [bold red]{physician.Name} {physician.Surname}[/]")
                         .PageSize(14)
@@ -202,8 +226,8 @@ namespace Chipsoft.Assignments.EPDConsole
         {
             AnsiConsole.Clear();
             EPDDbContext dbContext = new();
-            var physicians = dbContext.Physician.ToList();
-            var patients = dbContext.Patients.ToList();
+            var physicians = dbContext.Physician.Where(p => p.Deleted == null).ToList();
+            var patients = dbContext.Patients.Where(p => p.Deleted == null).ToList();
 
             var physician = Util.SearchAndSelect(
                 physicians,
@@ -272,7 +296,7 @@ namespace Chipsoft.Assignments.EPDConsole
         {
             AnsiConsole.Clear();
             EPDDbContext dbContext = new();
-            var physicians = dbContext.Physician.ToList();
+            var physicians = dbContext.Physician.Where(p => p.Deleted == null).ToList();
             var physician = Util.SearchAndSelect(
                 physicians,
                 "Zoek arts",
@@ -316,7 +340,7 @@ namespace Chipsoft.Assignments.EPDConsole
         {
             AnsiConsole.Clear();
             EPDDbContext dbContext = new();
-            var patients = dbContext.Patients.ToList();
+            var patients = dbContext.Patients.Where(p => p.Deleted == null).ToList();
             var patient = Util.SearchAndSelect(
                 patients,
                 "Zoek patient",
