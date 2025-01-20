@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 using Spectre.Console;
 
 namespace Chipsoft.Assignments.EPDConsole
@@ -19,7 +18,7 @@ namespace Chipsoft.Assignments.EPDConsole
         private static void AddPatient()
         {
             AnsiConsole.Clear();
-            EPDDbContext dbContext = new EPDDbContext();
+            EPDDbContext dbContext = new();
 
             var name = AnsiConsole.Ask<string>("[red]Voornaam:[/] ");
             var surname = AnsiConsole.Ask<string>("[red]Achternaam:[/] ");
@@ -36,7 +35,6 @@ namespace Chipsoft.Assignments.EPDConsole
             if (confirmation)
             {
                 dbContext.SaveChanges();
-                AnsiConsole.MarkupLine($"[bold green]Patient {name} toegevoegd[/]");
             }
         }
 
@@ -63,8 +61,9 @@ namespace Chipsoft.Assignments.EPDConsole
                 })
             );
 
-            EPDDbContext dbContext = new EPDDbContext();
+            EPDDbContext dbContext = new();
 
+            // Show all appointments
             if (result.StartsWith("1"))
             {
                 var appointments = dbContext.Appointments
@@ -86,6 +85,7 @@ namespace Chipsoft.Assignments.EPDConsole
 
                 AnsiConsole.Prompt(prompt);
             }
+            // Show appointments of patient
             else if (result.StartsWith("2"))
             {
                 var patients = dbContext.Patients.ToList();
@@ -121,6 +121,7 @@ namespace Chipsoft.Assignments.EPDConsole
 
                 AnsiConsole.Prompt(prompt);
             }
+            // Show appointments of physician
             else if (result.StartsWith("3"))
             {
                 var physicians = dbContext.Physician.ToList();
@@ -156,6 +157,7 @@ namespace Chipsoft.Assignments.EPDConsole
 
                 AnsiConsole.Prompt(prompt);
             }
+            // Show appointments of physician today
             else if (result.StartsWith("4"))
             {
                 var physicians = dbContext.Physician.ToList();
@@ -181,9 +183,8 @@ namespace Chipsoft.Assignments.EPDConsole
                 var prompt = new SelectionPrompt<Appointment>()
                         .Title($"Afspraken van vandaag voor [bold red]{physician.Name} {physician.Surname}[/]")
                         .PageSize(14)
-                        .UseConverter(a => a.ToString());
-
-                prompt.AddChoices(appointments);
+                        .UseConverter(a => a.ToString())
+                        .AddChoices(appointments);
 
                 AnsiConsole.Prompt(prompt);
             }
@@ -192,7 +193,7 @@ namespace Chipsoft.Assignments.EPDConsole
         private static void AddAppointment()
         {
             AnsiConsole.Clear();
-            EPDDbContext dbContext = new EPDDbContext();
+            EPDDbContext dbContext = new();
             var physicians = dbContext.Physician.ToList();
             var patients = dbContext.Patients.ToList();
 
@@ -221,15 +222,9 @@ namespace Chipsoft.Assignments.EPDConsole
             }
 
             var description = AnsiConsole.Ask<string>("[red]Beschrijving:[/] ");
-
-            var dates = new List<DateTime>();
-            var currentDate = DateTime.Now;
-            for (int i = 0; i < PLANNING_MAX_LOOK_AHEAD; i++)
-            {
-                dates.Add(currentDate.AddDays(i));
-            }
-
             var now = DateTime.Now;
+
+            // Show calendar for current and next month as reference
             var next = now.AddMonths(1);
             AnsiConsole.Write(new Columns(
                 new Calendar(now.Year, now.Month).Culture("nl-BE").AddCalendarEvent(now).HighlightStyle(Style.Parse("yellow bold")),
@@ -237,15 +232,16 @@ namespace Chipsoft.Assignments.EPDConsole
             ));
 
             var prompt = new SelectionPrompt<DateTime>()
-                    .Title($"Kies een datum voor een afspraak bij [bold red]{physician.Surname} {physician.Name}[/] voor [bold green]{patient.Surname} {patient.Name}[/]")
-                    .PageSize(14)
-                    .UseConverter((date) => $"{date:dd/MM/yyyy HH:mm} - {Util.WeekdayToString(date)}");
+                .Title($"Kies een datum voor een afspraak bij [bold red]{physician.Surname} {physician.Name}[/] voor [bold green]{patient.Surname} {patient.Name}[/]")
+                .PageSize(14)
+                .UseConverter((date) => $"{date:dd/MM/yyyy HH:mm} - {Util.WeekdayToStringNL(date)}");
 
+            // Fetch all available time slots and add them grouped by day to the prompt
             for (int i = 0; i < PLANNING_MAX_LOOK_AHEAD; i++)
             {
                 prompt.AddChoiceGroup(DateTime.Now.AddDays(i), TimeTools.FindAvailableTimeSlots(
                     dbContext.Appointments.Where(a => a.PhysicianId == physician.PhysicianId).ToList(),
-                    currentDate.AddDays(i),
+                    now.AddDays(i),
                     START_TIME,
                     END_TIME
                 ));
@@ -253,7 +249,10 @@ namespace Chipsoft.Assignments.EPDConsole
 
             var date = AnsiConsole.Prompt(prompt);
             var appointment = new Appointment(date, description, patient.PatientId, physician.PhysicianId);
-            var confirmed = AnsiConsole.Confirm($"Afspraak op [bold blue]{date:dd/MM/yyyy:HH:mm}[/] voor [bold green]{patient.Surname} {patient.Name}[/] bij [bold red]{physician.Surname} {physician.Name}[/] toevoegen?");
+            var confirmed = AnsiConsole.Confirm(
+                $"Afspraak op [bold blue]{date:dd/MM/yyyy:HH:mm}[/] voor [bold green]{patient.Surname} {patient.Name}[/] bij [bold red]{physician.Surname} {physician.Name}[/] toevoegen?"
+            );
+
             if (confirmed)
             {
                 dbContext.Appointments.Add(appointment);
@@ -261,13 +260,10 @@ namespace Chipsoft.Assignments.EPDConsole
             }
         }
 
-
-
-
         private static void DeletePhysician()
         {
             AnsiConsole.Clear();
-            EPDDbContext dbContext = new EPDDbContext();
+            EPDDbContext dbContext = new();
             var physicians = dbContext.Physician.ToList();
             var physician = Util.SearchAndSelect(
                 physicians,
@@ -288,16 +284,12 @@ namespace Chipsoft.Assignments.EPDConsole
                 dbContext.SaveChanges();
                 AnsiConsole.MarkupLine($"[bold green]Arts {physician} verwijderd[/]");
             }
-            else
-            {
-                AnsiConsole.MarkupLine("[bold red]Geannuleerd[/]");
-            }
         }
 
         private static void AddPhysician()
         {
             AnsiConsole.Clear();
-            EPDDbContext dbContext = new EPDDbContext();
+            EPDDbContext dbContext = new();
 
             var name = AnsiConsole.Ask<string>("[red]Voornaam:[/] ");
             var surname = AnsiConsole.Ask<string>("[red]Achternaam:[/] ");
@@ -308,14 +300,13 @@ namespace Chipsoft.Assignments.EPDConsole
             if (confirmation)
             {
                 dbContext.SaveChanges();
-                AnsiConsole.MarkupLine($"[bold green]Arts {name} toegevoegd[/]");
             }
         }
 
         private static void DeletePatient()
         {
             AnsiConsole.Clear();
-            EPDDbContext dbContext = new EPDDbContext();
+            EPDDbContext dbContext = new();
             var patients = dbContext.Patients.ToList();
             var patient = Util.SearchAndSelect(
                 patients,
@@ -334,13 +325,8 @@ namespace Chipsoft.Assignments.EPDConsole
             {
                 dbContext.Patients.Remove(patient);
                 dbContext.SaveChanges();
-                AnsiConsole.MarkupLine($"[bold green]Patient {patient} verwijderd[/]");
+                AnsiConsole.Confirm($"[bold green]Patient {patient} verwijderd[/]");
             }
-            else
-            {
-                AnsiConsole.MarkupLine("[bold red]Geannuleerd[/]");
-            }
-
         }
 
         #region FreeCodeForAssignment
@@ -399,10 +385,11 @@ namespace Chipsoft.Assignments.EPDConsole
                     case 7:
                         return false;
                     case 8:
-                        EPDDbContext dbContext = new EPDDbContext();
+                        EPDDbContext dbContext = new();
                         dbContext.Database.EnsureDeleted();
                         dbContext.Database.EnsureCreated();
 #if DEBUG
+                        // Seed data
                         var pyhsician = new Physician("John", "Doe");
                         dbContext.Physician.Add(pyhsician);
                         var patient = new Patient("Hannah", "Witvrouwen", "Selderstraat 7/201", "Antwerpen", "2060", "België", "hannah.witvrouwen@gmail.com", "+324 71 79 10 67");

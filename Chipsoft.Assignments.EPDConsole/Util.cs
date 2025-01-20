@@ -4,7 +4,7 @@ namespace Chipsoft.Assignments.EPDConsole
 {
     public class Util
     {
-        public static string WeekdayToString(DateTime date)
+        public static string WeekdayToStringNL(DateTime date)
         {
             return date.DayOfWeek switch
             {
